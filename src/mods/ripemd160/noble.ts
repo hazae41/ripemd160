@@ -1,6 +1,7 @@
+import { Box, Copiable, Copied } from "@hazae41/box"
 import { Result } from "@hazae41/result"
 import { ripemd160 } from "@noble/hashes/ripemd160"
-import { Adapter, Copied } from "./adapter.js"
+import { Adapter } from "./adapter.js"
 import { CreateError, FinalizeError, HashError, UpdateError } from "./errors.js"
 
 export function fromNoble(): Adapter {
@@ -21,8 +22,8 @@ export function fromNoble(): Adapter {
       return Result.runAndWrapSync(() => ripemd160.create()).mapSync(Hasher.new).mapErrSync(CreateError.from)
     }
 
-    tryUpdate(bytes: Uint8Array) {
-      return Result.runAndWrapSync(() => this.inner.update(bytes)).clear().mapErrSync(UpdateError.from)
+    tryUpdate(bytes: Box<Copiable>) {
+      return Result.runAndWrapSync(() => this.inner.update(bytes.get().bytes)).clear().mapErrSync(UpdateError.from)
     }
 
     tryFinalize() {
@@ -31,8 +32,8 @@ export function fromNoble(): Adapter {
 
   }
 
-  function tryHash(bytes: Uint8Array) {
-    return Result.runAndWrapSync(() => ripemd160(bytes)).mapSync(Copied.new).mapErrSync(HashError.from)
+  function tryHash(bytes: Box<Copiable>) {
+    return Result.runAndWrapSync(() => ripemd160(bytes.get().bytes)).mapSync(Copied.new).mapErrSync(HashError.from)
   }
 
   return { Hasher, tryHash }

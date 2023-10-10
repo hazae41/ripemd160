@@ -1,3 +1,4 @@
+import { Box, Copiable } from "@hazae41/box"
 import { Morax } from "@hazae41/morax"
 import { Result } from "@hazae41/result"
 import { Adapter } from "./adapter.js"
@@ -24,7 +25,7 @@ export async function fromMorax(): Promise<Adapter> {
       return Result.runAndWrapSync(() => new Morax.Ripemd160Hasher()).mapSync(Hasher.new).mapErrSync(CreateError.from)
     }
 
-    tryUpdate(bytes: Uint8Array) {
+    tryUpdate(bytes: Box<Copiable>) {
       return Result.runAndWrapSync(() => this.inner.update(bytes)).mapErrSync(UpdateError.from)
     }
 
@@ -34,7 +35,7 @@ export async function fromMorax(): Promise<Adapter> {
 
   }
 
-  function tryHash(bytes: Uint8Array) {
+  function tryHash(bytes: Box<Copiable>) {
     return Result.runAndWrapSync(() => Morax.ripemd160(bytes)).mapErrSync(HashError.from)
   }
 
