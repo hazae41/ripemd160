@@ -1,3 +1,5 @@
+import "@hazae41/symbol-dispose-polyfill"
+
 import { assert, test } from "@hazae41/phobos"
 import { fromMorax } from "./morax.js"
 import { fromNoble } from "./noble.js"
