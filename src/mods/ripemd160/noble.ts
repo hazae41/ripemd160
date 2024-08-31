@@ -1,10 +1,9 @@
-import { BytesOrCopiable, Copied } from "@hazae41/box"
-import { Result } from "@hazae41/result"
-import { ripemd160 } from "@noble/hashes/ripemd160"
+import type Ripemd160Noble from "@noble/hashes/ripemd160"
+import { BytesOrCopiable, Copied } from "libs/copiable/index.js"
 import { Adapter } from "./adapter.js"
-import { CreateError, FinalizeError, HashError, UpdateError } from "./errors.js"
 
-export function fromNoble(): Adapter {
+export function fromNoble(noble: typeof Ripemd160Noble) {
+  const { ripemd160 } = noble
 
   function getBytes(bytes: BytesOrCopiable) {
     return "bytes" in bytes ? bytes.bytes : bytes
@@ -13,40 +12,38 @@ export function fromNoble(): Adapter {
   class Hasher {
 
     constructor(
-      readonly inner: ReturnType<typeof ripemd160.create>
+      readonly inner: ReturnType<typeof Ripemd160Noble.ripemd160.create>
     ) { }
 
     [Symbol.dispose]() { }
 
-    static new(inner: ReturnType<typeof ripemd160.create>) {
+    static create(inner: ReturnType<typeof Ripemd160Noble.ripemd160.create>) {
       return new Hasher(inner)
     }
 
-    static tryNew() {
-      return Result.runAndWrapSync(() => {
-        return ripemd160.create()
-      }).mapSync(Hasher.new).mapErrSync(CreateError.from)
+    static createOrThrow() {
+      return new Hasher(ripemd160.create())
     }
 
-    tryUpdate(bytes: BytesOrCopiable) {
-      return Result.runAndWrapSync(() => {
-        return this.inner.update(getBytes(bytes))
-      }).set(this).mapErrSync(UpdateError.from)
+    cloneOrThrow() {
+      return new Hasher(this.inner.clone())
     }
 
-    tryFinalize() {
-      return Result.runAndWrapSync(() => {
-        return this.inner.clone().digest()
-      }).mapSync(Copied.new).mapErrSync(FinalizeError.from)
+    updateOrThrow(bytes: BytesOrCopiable) {
+      this.inner.update(getBytes(bytes))
+
+      return this
+    }
+
+    finalizeOrThrow() {
+      return new Copied(this.inner.clone().digest())
     }
 
   }
 
-  function tryHash(bytes: BytesOrCopiable) {
-    return Result.runAndWrapSync(() => {
-      return ripemd160(getBytes(bytes))
-    }).mapSync(Copied.new).mapErrSync(HashError.from)
+  function hashOrThrow(bytes: BytesOrCopiable) {
+    return new Copied(ripemd160(getBytes(bytes)))
   }
 
-  return { Hasher, tryHash }
+  return { Hasher, hashOrThrow } satisfies Adapter
 }

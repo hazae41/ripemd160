@@ -16,16 +16,19 @@ npm i @hazae41/ripemd160
 
 ## Getting started
 
-### Morax (WebAssembly)
+### WebAssembly
 
 ```bash
-npm i @hazae41/morax
+npm i @hazae41/ripemd.wasm
 ```
 
 ```typescript
 import { Ripemd160 } from "@hazae41/ripemd160"
+import { RipemdWasm } from "@hazae41/ripemd.wasm"
 
-Ripemd160.set(await Ripemd160.fromMorax())
+await RipemdWasm.initBundled()
+
+Ripemd160.set(Ripemd160.fromWasm(RipemdWasm))
 ```
 
 ### Noble (JavaScript)
@@ -36,8 +39,9 @@ npm i @noble/hashes
 
 ```typescript
 import { Ripemd160 } from "@hazae41/ripemd160"
+import Ripemd160Noble from "@noble/hashes/ripemd160"
 
-Ripemd160.set(Ripemd160.fromNoble())
+Ripemd160.set(Ripemd160.fromNoble(Ripemd160Noble))
 ```
 
 ## Usage
@@ -45,13 +49,17 @@ Ripemd160.set(Ripemd160.fromNoble())
 ### Direct
 
 ```tsx
-const hashed: Uint8Array = Ripemd160.get().tryHash(new Uint8Array([1,2,3,4,5])).unwrap().copyAndDispose()
+using hashed: Copiable = Ripemd160.get().getOrThrow().hashOrThrow(new Uint8Array([1,2,3,4,5]))
+const hashed2: Uint8Array = hashed.bytes.slice()
 ```
 
 ### Incremental
 
 ```tsx
-const hasher = Ripemd160.get().Hasher.tryNew().unwrap()
-hasher.tryUpdate(new Uint8Array([1,2,3,4,5])).unwrap()
-const hashed: Uint8Array = hasher.tryFinalize().unwrap().copyAndDispose()
+using hasher: Ripemd160.Hasher = Ripemd160.get().getOrThrow().Hasher.createOrThrow()
+hasher.updateOrThrow(new Uint8Array([1,2,3,4,5]))
+hasher.updateOrThrow(new Uint8Array([6,7,8,9,10]))
+
+using hashed: Copiable = hasher.finalizeOrThrow()
+const hashed2: Uint8Array = hashed.bytes.slice()
 ```

@@ -1,30 +1,31 @@
-import { BytesOrCopiable, Copiable } from "@hazae41/box"
-import { None, Option } from "@hazae41/option"
-import { Result } from "@hazae41/result"
-import { CreateError, FinalizeError, HashError, UpdateError } from "./errors.js"
+import { None, Nullable, Option } from "@hazae41/option"
+import { BytesOrCopiable, Copiable } from "libs/copiable/index.js"
 
 let global: Option<Adapter> = new None()
 
 export function get() {
-  return global.unwrap()
+  return global
 }
 
-export function set(value?: Adapter) {
+export function set(value: Nullable<Adapter>) {
   global = Option.wrap(value)
 }
 
 export interface Hasher extends Disposable {
-  tryUpdate(bytes: BytesOrCopiable): Result<this, UpdateError>
-  tryFinalize(): Result<Copiable, FinalizeError>
+  cloneOrThrow(): Hasher
+
+  updateOrThrow(bytes: BytesOrCopiable): this
+
+  finalizeOrThrow(): Copiable
 }
 
 export interface HasherFactory {
-  tryNew(): Result<Hasher, CreateError>
+  createOrThrow(): Hasher
 }
 
 export interface Adapter {
   readonly Hasher: HasherFactory
 
-  tryHash(bytes: BytesOrCopiable): Result<Copiable, HashError>
+  hashOrThrow(bytes: BytesOrCopiable): Copiable
 }
 
