@@ -8,7 +8,7 @@ export function fromWasm(wasm: typeof RipemdWasm) {
 
   function getMemory(bytesOrCopiable: BytesOrCopiable) {
     if (bytesOrCopiable instanceof Memory)
-      return Box.createAsMoved(bytesOrCopiable)
+      return Box.createAsDropped(bytesOrCopiable)
     if (bytesOrCopiable instanceof Uint8Array)
       return Box.create(new Memory(bytesOrCopiable))
     return Box.create(new Memory(bytesOrCopiable.bytes))
@@ -39,7 +39,7 @@ export function fromWasm(wasm: typeof RipemdWasm) {
     updateOrThrow(bytes: BytesOrCopiable) {
       using memory = getMemory(bytes)
 
-      this.inner.update(memory.inner)
+      this.inner.update(memory.value)
 
       return this
     }
@@ -53,7 +53,7 @@ export function fromWasm(wasm: typeof RipemdWasm) {
   function hashOrThrow(bytes: BytesOrCopiable) {
     using memory = getMemory(bytes)
 
-    return ripemd160(memory.inner)
+    return ripemd160(memory.value)
   }
 
   return { Hasher, hashOrThrow } satisfies Adapter
