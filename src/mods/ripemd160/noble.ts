@@ -1,4 +1,4 @@
-import type Ripemd160Noble from "@noble/hashes/ripemd160"
+import type * as Ripemd160Noble from "@noble/hashes/ripemd160"
 import { BytesOrCopiable, Copied } from "libs/copiable/index.js"
 import { Adapter } from "./adapter.js"
 

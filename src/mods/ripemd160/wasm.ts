@@ -1,4 +1,4 @@
-import { Box } from "@hazae41/box"
+import { Pin, Ref } from "@hazae41/box"
 import type { Ripemd160Hasher, RipemdWasm } from "@hazae41/ripemd.wasm"
 import { BytesOrCopiable } from "libs/copiable/index.js"
 import { Adapter } from "./adapter.js"
@@ -8,10 +8,12 @@ export function fromWasm(wasm: typeof RipemdWasm) {
 
   function getMemory(bytesOrCopiable: BytesOrCopiable) {
     if (bytesOrCopiable instanceof Memory)
-      return Box.createAsDropped(bytesOrCopiable)
+      return new Ref(bytesOrCopiable)
+
     if (bytesOrCopiable instanceof Uint8Array)
-      return Box.create(new Memory(bytesOrCopiable))
-    return Box.create(new Memory(bytesOrCopiable.bytes))
+      return Pin.from(new Memory(bytesOrCopiable))
+
+    return Pin.from(new Memory(bytesOrCopiable.bytes))
   }
 
   class Hasher {
